@@ -77,29 +77,29 @@ connectionBetween adjacentDot selectedDot =
 
 view : Model -> Html Msg
 view model =
-  table [] (renderRows model.numberOfRows model.numberOfColumns model.selectedDot model.connections)
+  table [] (renderRows model.numberOfRows model)
 
-renderRows : Int -> Int -> (Int, Int) -> List (Int, Int) -> List (Html Msg)
-renderRows numberOfRows numberOfCells selectedDot connections =
+renderRows : Int -> Model -> List (Html Msg)
+renderRows numberOfRows model =
   if numberOfRows == 1 then
-    [tr [] (renderCells numberOfRows numberOfCells selectedDot connections)]
+    [tr [] (renderCells numberOfRows model.numberOfColumns model)]
   else
-    (renderRows (numberOfRows - 1) numberOfCells selectedDot connections)
-    ++ [tr [] (renderCells numberOfRows numberOfCells selectedDot connections)]
+    (renderRows (numberOfRows - 1) model)
+    ++ [tr [] (renderCells numberOfRows model.numberOfColumns model)]
 
-renderCells : Int -> Int -> (Int, Int) -> List (Int, Int) -> List (Html Msg)
-renderCells rowNumber numberOfCells selectedDot connections =
+renderCells : Int -> Int -> Model -> List (Html Msg)
+renderCells rowNumber numberOfCells model =
   if numberOfCells == 1 then
-    [renderCell rowNumber numberOfCells selectedDot connections]
+    [renderCell rowNumber numberOfCells model]
   else
-    (renderCells rowNumber (numberOfCells - 1) selectedDot connections)
-    ++ [renderCell rowNumber numberOfCells selectedDot connections]
+    (renderCells rowNumber (numberOfCells - 1) model)
+    ++ [renderCell rowNumber numberOfCells model]
 
-renderCell : Int -> Int -> (Int, Int) -> List (Int, Int) -> Html Msg
-renderCell x y selectedDot connections =
+renderCell : Int -> Int -> Model -> Html Msg
+renderCell x y model =
   if isDot x y then
-    renderDot x y selectedDot
-  else if List.member (x,y) connections then
+    renderDot x y model.selectedDot
+  else if List.member (x,y) model.connections then
     td [] [text "|"]
   else
     td [] [text (toString [x, y])]
