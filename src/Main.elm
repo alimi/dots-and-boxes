@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Html exposing (..)
 import Html.Events exposing (..)
+import Html.Attributes exposing (..)
 
 
 ---- MODEL ----
@@ -10,12 +11,13 @@ import Html.Events exposing (..)
 type alias Model =
   { numberOfRows : Int
   , numberOfColumns : Int
+  , selectedDot : (Int, Int)
   }
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model 3 3, Cmd.none)
+  (Model 3 3 (0,0), Cmd.none)
 
 
 
@@ -23,12 +25,19 @@ init =
 
 
 type Msg
-  = NoOp
+  = DotSelected Int Int
+  | DotUnselected Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-  (model, Cmd.none)
+  case msg of
+
+    DotSelected x y ->
+      ({ model | selectedDot = (x,y) }, Cmd.none)
+
+    DotUnselected x y ->
+      ({ model | selectedDot = (0,0) }, Cmd.none)
 
 
 
@@ -37,28 +46,33 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  table [] (renderRows model.numberOfRows model.numberOfColumns)
+  table [] (renderRows model.numberOfRows model.numberOfColumns model.selectedDot)
 
-renderRows : Int -> Int -> List (Html Msg)
-renderRows numberOfRows numberOfCells =
+renderRows : Int -> Int -> (Int, Int) ->List (Html Msg)
+renderRows numberOfRows numberOfCells selectedDot =
   if numberOfRows == 1 then
-    [tr [] (renderCells numberOfRows numberOfCells)]
+    [tr [] (renderCells numberOfRows numberOfCells selectedDot)]
   else
-    (renderRows (numberOfRows - 1) numberOfCells) ++ [tr [] (renderCells numberOfRows numberOfCells)]
+    (renderRows (numberOfRows - 1) numberOfCells selectedDot)
+    ++ [tr [] (renderCells numberOfRows numberOfCells selectedDot)]
 
-renderCells : Int -> Int -> List (Html Msg)
-renderCells rowNumber numberOfCells =
+renderCells : Int -> Int -> (Int, Int) -> List (Html Msg)
+renderCells rowNumber numberOfCells selectedDot =
   if numberOfCells == 1 then
-    [td [] [renderCell rowNumber numberOfCells]]
+    [renderCell rowNumber numberOfCells selectedDot]
   else
-    (renderCells rowNumber (numberOfCells - 1)) ++ [td [] [renderCell rowNumber numberOfCells]]
+    (renderCells rowNumber (numberOfCells - 1) selectedDot)
+    ++ [renderCell rowNumber numberOfCells selectedDot]
 
-renderCell : Int -> Int -> Html Msg
-renderCell x y =
+renderCell : Int -> Int -> (Int, Int) -> Html Msg
+renderCell x y selectedDot =
   if (x % 2 == 1) && (y % 2 == 1) then
-    text "*"
+    if (x,y) == selectedDot then
+      td [onClick (DotUnselected x y), class "dot selected"] [text "*"]
+    else
+      td [onClick (DotSelected x y), class "dot"] [text "*"]
   else
-    text (toString [x, y])
+    td [] [text (toString [x, y])]
 
 ---- PROGRAM ----
 
