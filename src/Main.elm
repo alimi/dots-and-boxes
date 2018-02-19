@@ -12,7 +12,7 @@ type alias Model =
   { numberOfRows : Int
   , numberOfColumns : Int
   , selectedDot : (Int, Int)
-  , claimedDots : List (Int, Int)
+  , connections : List (Int, Int)
   }
 
 
@@ -42,9 +42,22 @@ update msg model =
       ({ model | selectedDot = (0,0) }, Cmd.none)
 
     AdjacentDotSelected x y ->
-      -- reset selected dot
-      ({ model | claimedDots = model.claimedDots ++ [(x,y), model.selectedDot] }, Cmd.none)
+      let
+        connection = connectionBetween (x, y) model.selectedDot
+      in
+        ({ model
+         | connections = connection::model.connections
+         , selectedDot = (0,0)
+         }
+        , Cmd.none
+        )
 
+connectionBetween : (Int, Int) -> (Int, Int) -> (Int, Int)
+connectionBetween dot1 dot2 =
+  if (Tuple.first dot1) == (Tuple.first dot2) then
+    (Tuple.first dot1, abs (Tuple.second dot1 - Tuple.second dot2))
+  else
+    (abs (Tuple.first dot1 - Tuple.first dot2), Tuple.second dot1)
 
 
 ---- VIEW ----
@@ -52,35 +65,30 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  table [] (renderRows model.numberOfRows model.numberOfColumns model.selectedDot model.claimedDots)
+  table [] (renderRows model.numberOfRows model.numberOfColumns model.selectedDot model.connections)
 
 renderRows : Int -> Int -> (Int, Int) -> List (Int, Int) -> List (Html Msg)
-renderRows numberOfRows numberOfCells selectedDot claimedDots =
+renderRows numberOfRows numberOfCells selectedDot connections =
   if numberOfRows == 1 then
-    [tr [] (renderCells numberOfRows numberOfCells selectedDot claimedDots)]
+    [tr [] (renderCells numberOfRows numberOfCells selectedDot connections)]
   else
-    (renderRows (numberOfRows - 1) numberOfCells selectedDot claimedDots)
-    ++ [tr [] (renderCells numberOfRows numberOfCells selectedDot claimedDots)]
+    (renderRows (numberOfRows - 1) numberOfCells selectedDot connections)
+    ++ [tr [] (renderCells numberOfRows numberOfCells selectedDot connections)]
 
 renderCells : Int -> Int -> (Int, Int) -> List (Int, Int) -> List (Html Msg)
-renderCells rowNumber numberOfCells selectedDot claimedDots =
+renderCells rowNumber numberOfCells selectedDot connections =
   if numberOfCells == 1 then
-    [renderCell rowNumber numberOfCells selectedDot claimedDots]
+    [renderCell rowNumber numberOfCells selectedDot connections]
   else
-    (renderCells rowNumber (numberOfCells - 1) selectedDot claimedDots)
-    ++ [renderCell rowNumber numberOfCells selectedDot claimedDots]
+    (renderCells rowNumber (numberOfCells - 1) selectedDot connections)
+    ++ [renderCell rowNumber numberOfCells selectedDot connections]
 
 renderCell : Int -> Int -> (Int, Int) -> List (Int, Int) -> Html Msg
-renderCell x y selectedDot claimedDots =
+renderCell x y selectedDot connections =
   if isDot x y then
     renderDot x y selectedDot
-  else if (x /= y) then
-    if (List.member (x - 1, y) claimedDots) && (List.member (x + 1, y) claimedDots) then
-      td [] [text "|"]
-    else if (List.member (x, y - 1) claimedDots) && (List.member (x, y + 1) claimedDots) then
-      td [] [text "-"]
-    else
-      td [] [text (toString [x, y])]
+  else if List.member (x,y) connections then
+    td [] [text "|"]
   else
     td [] [text (toString [x, y])]
 
