@@ -40,19 +40,25 @@ view model =
   table [] (renderRows model.numberOfRows model.numberOfColumns)
 
 renderRows : Int -> Int -> List (Html Msg)
-renderRows numberOfRows numberOfColumns =
+renderRows numberOfRows numberOfCells =
   if numberOfRows == 1 then
-    [tr [] (renderCells numberOfRows numberOfColumns)]
+    [tr [] (renderCells numberOfRows numberOfCells)]
   else
-    (renderRows (numberOfRows - 1) numberOfColumns) ++ [tr [] (renderCells numberOfRows numberOfColumns)]
+    (renderRows (numberOfRows - 1) numberOfCells) ++ [tr [] (renderCells numberOfRows numberOfCells)]
 
 renderCells : Int -> Int -> List (Html Msg)
-renderCells rowNumber numberOfColumns =
-  if numberOfColumns == 1 then
-    [td [] [text (toString [rowNumber, numberOfColumns])]]
+renderCells rowNumber numberOfCells =
+  if numberOfCells == 1 then
+    [td [] [renderCell rowNumber numberOfCells]]
   else
-    (renderCells rowNumber (numberOfColumns - 1)) ++ [td [] [text (toString [rowNumber, numberOfColumns])]]
+    (renderCells rowNumber (numberOfCells - 1)) ++ [td [] [renderCell rowNumber numberOfCells]]
 
+renderCell : Int -> Int -> Html Msg
+renderCell x y =
+  if (x % 2 == 1) && (y % 2 == 1) then
+    text "*"
+  else
+    text (toString [x, y])
 
 ---- PROGRAM ----
 
