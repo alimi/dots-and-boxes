@@ -53,11 +53,23 @@ update msg model =
         )
 
 connectionBetween : (Int, Int) -> (Int, Int) -> (Int, Int)
-connectionBetween dot1 dot2 =
-  if (Tuple.first dot1) == (Tuple.first dot2) then
-    (Tuple.first dot1, abs (Tuple.second dot1 - Tuple.second dot2))
-  else
-    (abs (Tuple.first dot1 - Tuple.first dot2), Tuple.second dot1)
+connectionBetween adjacentDot selectedDot =
+  let
+    adjacentX = Tuple.first adjacentDot
+    adjacentY = Tuple.second adjacentDot
+    selectedX = Tuple.first selectedDot
+    selectedY = Tuple.second selectedDot
+  in
+    if adjacentX == selectedX then
+      if adjacentY > selectedY then
+        (selectedX, selectedY + 1)
+      else
+        (adjacentX, adjacentY + 1)
+    else
+      if adjacentX > selectedX then
+        (selectedX + 1, selectedY)
+      else
+        (adjacentX + 1, adjacentY)
 
 
 ---- VIEW ----
