@@ -100,7 +100,7 @@ renderCell x y model =
   if isDot x y then
     renderDot x y model.selectedDot
   else if List.member (x,y) model.connections then
-    td [] [text "|"]
+    renderConnection x
   else
     td [] [text (toString [x, y])]
 
@@ -112,6 +112,13 @@ renderDot x y selectedDot =
     td [onClick (AdjacentDotSelected x y), class "dot adjacent"] [text "*"]
   else
     td [onClick (DotSelected x y), class "dot"] [text "*"]
+
+renderConnection : Int -> Html Msg
+renderConnection x =
+  if x % 2 == 1 then
+    td [] [text "---"]
+  else
+    td [] [text "|"]
 
 isDot : Int -> Int -> Bool
 isDot x y =
