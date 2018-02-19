@@ -12,12 +12,13 @@ type alias Model =
   { numberOfRows : Int
   , numberOfColumns : Int
   , selectedDot : (Int, Int)
+  , claimedDots : List (Int, Int)
   }
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model 3 3 (0,0), Cmd.none)
+  (Model 3 3 (0,0) [], Cmd.none)
 
 
 
@@ -27,6 +28,7 @@ init =
 type Msg
   = DotSelected Int Int
   | DotUnselected Int Int
+  | AdjacentDotSelected Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -39,6 +41,10 @@ update msg model =
     DotUnselected x y ->
       ({ model | selectedDot = (0,0) }, Cmd.none)
 
+    AdjacentDotSelected x y ->
+      -- reset selected dot
+      ({ model | claimedDots = model.claimedDots ++ [(x,y), model.selectedDot] }, Cmd.none)
+
 
 
 ---- VIEW ----
@@ -46,28 +52,35 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-  table [] (renderRows model.numberOfRows model.numberOfColumns model.selectedDot)
+  table [] (renderRows model.numberOfRows model.numberOfColumns model.selectedDot model.claimedDots)
 
-renderRows : Int -> Int -> (Int, Int) ->List (Html Msg)
-renderRows numberOfRows numberOfCells selectedDot =
+renderRows : Int -> Int -> (Int, Int) -> List (Int, Int) -> List (Html Msg)
+renderRows numberOfRows numberOfCells selectedDot claimedDots =
   if numberOfRows == 1 then
-    [tr [] (renderCells numberOfRows numberOfCells selectedDot)]
+    [tr [] (renderCells numberOfRows numberOfCells selectedDot claimedDots)]
   else
-    (renderRows (numberOfRows - 1) numberOfCells selectedDot)
-    ++ [tr [] (renderCells numberOfRows numberOfCells selectedDot)]
+    (renderRows (numberOfRows - 1) numberOfCells selectedDot claimedDots)
+    ++ [tr [] (renderCells numberOfRows numberOfCells selectedDot claimedDots)]
 
-renderCells : Int -> Int -> (Int, Int) -> List (Html Msg)
-renderCells rowNumber numberOfCells selectedDot =
+renderCells : Int -> Int -> (Int, Int) -> List (Int, Int) -> List (Html Msg)
+renderCells rowNumber numberOfCells selectedDot claimedDots =
   if numberOfCells == 1 then
-    [renderCell rowNumber numberOfCells selectedDot]
+    [renderCell rowNumber numberOfCells selectedDot claimedDots]
   else
-    (renderCells rowNumber (numberOfCells - 1) selectedDot)
-    ++ [renderCell rowNumber numberOfCells selectedDot]
+    (renderCells rowNumber (numberOfCells - 1) selectedDot claimedDots)
+    ++ [renderCell rowNumber numberOfCells selectedDot claimedDots]
 
-renderCell : Int -> Int -> (Int, Int) -> Html Msg
-renderCell x y selectedDot =
+renderCell : Int -> Int -> (Int, Int) -> List (Int, Int) -> Html Msg
+renderCell x y selectedDot claimedDots =
   if isDot x y then
     renderDot x y selectedDot
+  else if (x /= y) then
+    if (List.member (x - 1, y) claimedDots) && (List.member (x + 1, y) claimedDots) then
+      td [] [text "|"]
+    else if (List.member (x, y - 1) claimedDots) && (List.member (x, y + 1) claimedDots) then
+      td [] [text "-"]
+    else
+      td [] [text (toString [x, y])]
   else
     td [] [text (toString [x, y])]
 
@@ -76,7 +89,7 @@ renderDot x y selectedDot =
   if (x,y) == selectedDot then
     td [onClick (DotUnselected x y), class "dot selected"] [text "*"]
   else if isAdjacent x y selectedDot then
-    td [onClick (DotSelected x y), class "dot adjacent"] [text "*"]
+    td [onClick (AdjacentDotSelected x y), class "dot adjacent"] [text "*"]
   else
     td [onClick (DotSelected x y), class "dot"] [text "*"]
 
