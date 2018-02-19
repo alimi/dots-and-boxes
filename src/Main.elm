@@ -66,13 +66,37 @@ renderCells rowNumber numberOfCells selectedDot =
 
 renderCell : Int -> Int -> (Int, Int) -> Html Msg
 renderCell x y selectedDot =
-  if (x % 2 == 1) && (y % 2 == 1) then
-    if (x,y) == selectedDot then
-      td [onClick (DotUnselected x y), class "dot selected"] [text "*"]
-    else
-      td [onClick (DotSelected x y), class "dot"] [text "*"]
+  if isDot x y then
+    renderDot x y selectedDot
   else
     td [] [text (toString [x, y])]
+
+renderDot : Int -> Int -> (Int, Int) -> Html Msg
+renderDot x y selectedDot =
+  if (x,y) == selectedDot then
+    td [onClick (DotUnselected x y), class "dot selected"] [text "*"]
+  else if isAdjacent x y selectedDot then
+    td [onClick (DotSelected x y), class "dot adjacent"] [text "*"]
+  else
+    td [onClick (DotSelected x y), class "dot"] [text "*"]
+
+isDot : Int -> Int -> Bool
+isDot x y =
+  (x % 2 == 1) && (y % 2 == 1)
+
+isAdjacent : Int -> Int -> (Int, Int) -> Bool
+isAdjacent x y dot =
+  if (x - 2 == Tuple.first dot) && y == Tuple.second dot then
+    True
+  else if (x + 2 == Tuple.first dot) && y == Tuple.second dot then
+    True
+  else if x == Tuple.first dot && (y - 2 == Tuple.second dot) then
+    True
+  else if x == Tuple.first dot && (y + 2 == Tuple.second dot) then
+    True
+  else
+    False
+
 
 ---- PROGRAM ----
 

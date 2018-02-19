@@ -22,3 +22,7 @@ td.dot.selected {
   font-size: 42px;
   color: red;
 }
+
+td.dot.adjacent {
+  border: 1px solid;
+}
