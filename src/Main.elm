@@ -102,7 +102,7 @@ renderCell x y model =
   else if List.member (x,y) model.connections then
     renderConnection x
   else
-    td [] [text (toString [x, y])]
+    td [] []
 
 renderDot : Int -> Int -> (Int, Int) -> Html Msg
 renderDot x y selectedDot =
@@ -116,7 +116,7 @@ renderDot x y selectedDot =
 renderConnection : Int -> Html Msg
 renderConnection x =
   if x % 2 == 1 then
-    td [] [text "---"]
+    td [] [text "--"]
   else
     td [] [text "|"]
 
