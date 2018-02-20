@@ -13,12 +13,14 @@ type alias Model =
   , numberOfColumns : Int
   , selectedDot : (Int, Int)
   , connections : List (Int, Int)
+  , players : List String
+  , currentPlayer : String
   }
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model 3 3 (0,0) [], Cmd.none)
+  (Model 3 3 (0,0) [] ["Player 1", "Player 2"] "Player 1", Cmd.none)
 
 
 
@@ -48,6 +50,7 @@ update msg model =
         ({ model
          | connections = connection::model.connections
          , selectedDot = (0,0)
+         , currentPlayer = nextPlayer model
          }
         , Cmd.none
         )
@@ -71,13 +74,22 @@ connectionBetween adjacentDot selectedDot =
       else
         (adjacentX + 1, adjacentY)
 
+nextPlayer : Model -> String
+nextPlayer model =
+  List.filter (\player -> player /= model.currentPlayer) model.players
+    |> List.head
+    |> Maybe.withDefault "Whoops"
+
 
 ---- VIEW ----
 
 
 view : Model -> Html Msg
 view model =
-  table [] (renderRows model.numberOfRows model)
+  div []
+    [ h1 [] [ text model.currentPlayer ]
+    , table [] (renderRows model.numberOfRows model)
+    ]
 
 renderRows : Int -> Model -> List (Html Msg)
 renderRows numberOfRows model =
