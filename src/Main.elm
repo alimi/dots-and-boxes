@@ -8,7 +8,9 @@ import Html.Attributes exposing (..)
 ---- MODEL ----
 
 type alias Box =
-  { sides : List (Int, Int) }
+  { sides : List (Int, Int)
+  , owner : String
+  }
 
 type alias Model =
   { numberOfRows : Int
@@ -92,6 +94,7 @@ findNewBoxes newConnection model =
   in
     List.filter (hasThreeCompleteSides model.connections) boxes
       |> List.filter (\box -> List.member newConnection box.sides)
+      |> List.map (\box -> { box | owner = model.currentPlayer })
 
 hasThreeCompleteSides : List (Int, Int) -> Box -> Bool
 hasThreeCompleteSides connections box =
@@ -115,7 +118,7 @@ buildBox center =
     x = Tuple.first center
     y = Tuple.second center
   in
-    Box [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+    Box [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] ""
 
 allPairs : List Int -> List Int -> List (Int, Int)
 allPairs xs ys =
