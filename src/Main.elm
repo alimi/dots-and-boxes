@@ -7,6 +7,8 @@ import Html.Attributes exposing (..)
 
 ---- MODEL ----
 
+type alias Box =
+  { sides : List (Int, Int) }
 
 type alias Model =
   { numberOfRows : Int
@@ -15,12 +17,13 @@ type alias Model =
   , connections : List (Int, Int)
   , players : List String
   , currentPlayer : String
+  , boxes : List Box
   }
 
 
 init : (Model, Cmd Msg)
 init =
-  (Model 3 3 (0,0) [] ["Player 1", "Player 2"] "Player 1", Cmd.none)
+  (Model 3 3 (0,0) [] ["Player 1", "Player 2"] "Player 1" [], Cmd.none)
 
 
 
@@ -46,11 +49,13 @@ update msg model =
     AdjacentDotSelected x y ->
       let
         connection = connectionBetween (x, y) model.selectedDot
+        newBoxes = findNewBoxes connection model
       in
         ({ model
          | connections = connection::model.connections
          , selectedDot = (0,0)
          , currentPlayer = nextPlayer model
+         , boxes = model.boxes ++ newBoxes
          }
         , Cmd.none
         )
@@ -79,6 +84,47 @@ nextPlayer model =
   List.filter (\player -> player /= model.currentPlayer) model.players
     |> List.head
     |> Maybe.withDefault "Whoops"
+
+findNewBoxes : (Int, Int) -> Model -> List Box
+findNewBoxes newConnection model =
+  let
+    boxes = findAllBoxes model.numberOfRows model.numberOfColumns
+  in
+    List.filter (hasThreeCompleteSides model.connections) boxes
+      |> List.filter (\box -> List.member newConnection box.sides)
+
+hasThreeCompleteSides : List (Int, Int) -> Box -> Bool
+hasThreeCompleteSides connections box =
+  let
+    completeSides = List.filter (\connection -> List.member connection box.sides) connections
+  in
+    List.length completeSides == 3
+
+findAllBoxes : Int -> Int -> List Box
+findAllBoxes numberOfRows numberOfColumns =
+  let
+    evenXs = List.range 1 numberOfRows |> List.filter (\x -> x % 2 == 0)
+    evenYs = List.range 1 numberOfColumns |> List.filter (\y -> y % 2 == 0)
+    centers = allPairs evenXs evenYs
+  in
+    List.map buildBox centers
+
+buildBox : (Int, Int) -> Box
+buildBox center =
+  let
+    x = Tuple.first center
+    y = Tuple.second center
+  in
+    Box [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]
+
+allPairs : List Int -> List Int -> List (Int, Int)
+allPairs xs ys =
+  case xs of
+    [] ->
+      []
+
+    (x::remainingXs) ->
+      List.map (\y -> (x,y)) ys ++ allPairs remainingXs ys
 
 
 ---- VIEW ----
