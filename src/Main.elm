@@ -9,6 +9,7 @@ import Html.Attributes exposing (..)
 
 type alias Box =
   { sides : List (Int, Int)
+  , center : (Int, Int)
   , owner : String
   }
 
@@ -118,7 +119,7 @@ buildBox center =
     x = Tuple.first center
     y = Tuple.second center
   in
-    Box [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] ""
+    Box [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] center ""
 
 allPairs : List Int -> List Int -> List (Int, Int)
 allPairs xs ys =
@@ -162,6 +163,8 @@ renderCell x y model =
     renderDot x y model.selectedDot
   else if List.member (x,y) model.connections then
     renderConnection x
+  else if List.member (x,y) (List.map (\box -> box.center) model.boxes) then
+    renderOwnedBox x y model.boxes
   else
     td [] []
 
@@ -180,6 +183,16 @@ renderConnection x =
     td [] [text "--"]
   else
     td [] [text "|"]
+
+renderOwnedBox : Int -> Int -> List Box -> Html Msg
+renderOwnedBox x y boxes =
+  let
+    boxesAroundCenter = List.filter (\box -> box.center == (x,y)) boxes
+  in
+    if List.all (\box -> box.owner == "Player 1") boxesAroundCenter then
+      td [] [text "1"]
+    else
+      td [] [text "2"]
 
 isDot : Int -> Int -> Bool
 isDot x y =
