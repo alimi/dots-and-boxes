@@ -57,7 +57,7 @@ update msg model =
         ({ model
          | connections = connection::model.connections
          , selectedDot = (0,0)
-         , currentPlayer = nextPlayer model
+         , currentPlayer = nextPlayer model newBoxes
          , boxes = model.boxes ++ newBoxes
          }
         , Cmd.none
@@ -82,11 +82,14 @@ connectionBetween adjacentDot selectedDot =
       else
         (adjacentX + 1, adjacentY)
 
-nextPlayer : Model -> String
-nextPlayer model =
-  List.filter (\player -> player /= model.currentPlayer) model.players
-    |> List.head
-    |> Maybe.withDefault "Whoops"
+nextPlayer : Model -> List Box -> String
+nextPlayer model newBoxes =
+  if List.isEmpty newBoxes then
+    List.filter (\player -> player /= model.currentPlayer) model.players
+      |> List.head
+      |> Maybe.withDefault "Whoops"
+  else
+    model.currentPlayer
 
 findNewBoxes : (Int, Int) -> Model -> List Box
 findNewBoxes newConnection model =
