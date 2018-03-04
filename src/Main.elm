@@ -163,7 +163,7 @@ renderCells rowNumber numberOfCells model =
 renderCell : Int -> Int -> Model -> Html Msg
 renderCell x y model =
   if isDot x y then
-    renderDot x y model.selectedDot
+    renderDot x y model.selectedDot model.connections
   else if List.member (x,y) model.connections then
     renderConnection x
   else if List.member (x,y) (List.map (\box -> box.center) model.boxes) then
@@ -171,11 +171,11 @@ renderCell x y model =
   else
     td [] []
 
-renderDot : Int -> Int -> (Int, Int) -> Html Msg
-renderDot x y selectedDot =
+renderDot : Int -> Int -> (Int, Int) -> List (Int, Int) -> Html Msg
+renderDot x y selectedDot connections =
   if (x,y) == selectedDot then
     td [onClick (DotUnselected x y), class "dot selected"] [text "*"]
-  else if isAdjacent x y selectedDot then
+  else if isAdjacent x y selectedDot connections then
     td [onClick (AdjacentDotSelected x y), class "dot adjacent"] [text "*"]
   else
     td [onClick (DotSelected x y), class "dot"] [text "*"]
@@ -201,16 +201,16 @@ isDot : Int -> Int -> Bool
 isDot x y =
   (x % 2 == 1) && (y % 2 == 1)
 
-isAdjacent : Int -> Int -> (Int, Int) -> Bool
-isAdjacent x y dot =
+isAdjacent : Int -> Int -> (Int, Int) -> List (Int, Int) -> Bool
+isAdjacent x y dot connections =
   if (x - 2 == Tuple.first dot) && y == Tuple.second dot then
-    True
+    not(List.member (x - 1, y) connections)
   else if (x + 2 == Tuple.first dot) && y == Tuple.second dot then
-    True
+    not(List.member (x + 1, y) connections)
   else if x == Tuple.first dot && (y - 2 == Tuple.second dot) then
-    True
+    not(List.member (x, y - 1) connections)
   else if x == Tuple.first dot && (y + 2 == Tuple.second dot) then
-    True
+    not(List.member (x, y + 1) connections)
   else
     False
 
