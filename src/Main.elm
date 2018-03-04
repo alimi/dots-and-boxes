@@ -139,10 +139,33 @@ allPairs xs ys =
 
 view : Model -> Html Msg
 view model =
-  div []
-    [ h1 [] [ text model.currentPlayer ]
-    , table [] (renderRows model.numberOfRows model)
-    ]
+  div [] ((renderPlayerHeadings model.players model.currentPlayer model.boxes) ++ [table [] (renderRows model.numberOfRows model)])
+
+renderPlayerHeadings : List (String) -> String -> List Box -> List (Html Msg)
+renderPlayerHeadings players currentPlayer boxes =
+  List.map (renderPlayerHeading currentPlayer boxes) players
+
+renderPlayerHeading : String -> List Box -> String -> Html Msg
+renderPlayerHeading currentPlayer boxes player =
+  let
+    playerScore
+      = List.filter (\box -> box.owner == player) boxes
+      |> List.length
+      |> formatPlayerScore
+
+    playerText = player ++ " " ++ playerScore
+  in
+    if player == currentPlayer then
+      h1 [class "player active"] [text playerText]
+    else
+      h2 [class "player inactive"] [text playerText]
+
+formatPlayerScore : Int -> String
+formatPlayerScore score =
+  if score == 1 then
+    "(1 Box)"
+  else
+    "(" ++ (toString score) ++ " Boxes)"
 
 renderRows : Int -> Model -> List (Html Msg)
 renderRows numberOfRows model =

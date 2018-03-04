@@ -28,3 +28,11 @@ td.dot.selected {
 td.dot.adjacent {
   border: 1px solid;
 }
+
+.player.inactive {
+  color: grey;
+}
+
+.player.active {
+  color: green;
+}
