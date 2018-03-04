@@ -26,7 +26,7 @@ type alias Model =
 
 init : (Model, Cmd Msg)
 init =
-  (Model 3 3 (0,0) [] ["Player 1", "Player 2"] "Player 1" [], Cmd.none)
+  (Model 5 5 (0,0) [] ["Player 1", "Player 2"] "Player 1" [], Cmd.none)
 
 
 
